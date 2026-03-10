@@ -5,14 +5,19 @@ import android.view.accessibility.AccessibilityEvent;
 import android.graphics.PixelFormat;
 import android.view.WindowManager;
 import android.view.View;
-import android.view.Gravity;
 
 public class TouchLockAccessibilityService extends AccessibilityService {
+    public static TouchLockAccessibilityService instance; // Статическая ссылка
     private WindowManager windowManager;
     private View overlayView;
     private boolean isLocked = false;
 
-    // Метод для получения команд (нужно будет связать с ботом)
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        instance = this; // Регистрируем службу
+    }
+
     public void lock() {
         if (isLocked) return;
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
@@ -22,7 +27,7 @@ public class TouchLockAccessibilityService extends AccessibilityService {
         WindowManager.LayoutParams params = new WindowManager.LayoutParams(
                 WindowManager.LayoutParams.MATCH_PARENT,
                 WindowManager.LayoutParams.MATCH_PARENT,
-                WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY, // ЭТА СТРОКА УБИВАЕТ УВЕДОМЛЕНИЕ
+                WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
                 WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL |
                 WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
                 PixelFormat.TRANSLUCENT);
@@ -41,5 +46,6 @@ public class TouchLockAccessibilityService extends AccessibilityService {
     }
 
     @Override public void onAccessibilityEvent(AccessibilityEvent event) {}
-    @Override public void onInterrupt() {}
+    @Override public void onInterrupt() { instance = null; }
+    @Override public void onDestroy() { instance = null; super.onDestroy(); }
 }
